@@ -60,11 +60,11 @@ HOTELS_DB = {
 @tool
 def search_flights(origin: str, destination: str) -> str:
     """
-    Tìm kiếm các chuyến bay giữa hai thành phố.
+    Tìm kiếm chuyến bay rẻ nhất giữa hai thành phố .
     Tham số:
     - origin: thành phố khởi hành (VD: 'Hà Nội', 'Hồ Chí Minh')
     - destination: thành phố đến (VD: 'Đà Nẵng', 'Phú Quốc')
-    Trả về danh sách chuyến bay với hãng, giờ bay, giá vé.
+    Trả về thông tin chuyến bay có giá rẻ nhất.
     Nếu không tìm thấy tuyến bay, trả về thông báo không có chuyến.
     """
     flights = FLIGHTS_DB.get((origin, destination))
@@ -73,16 +73,21 @@ def search_flights(origin: str, destination: str) -> str:
     if not flights:
         flights = FLIGHTS_DB.get((destination, origin))
         is_reverse = True
-        
+
     if not flights:
         return f"Không tìm thấy chuyến bay từ {origin} đến {destination}."
         
-    header = f"Các chuyến bay từ {destination} đến {origin} (Tuyến ngược lại):\n" if is_reverse else f"Các chuyến bay từ {origin} đến {destination}:\n"
-    lines = [header]
+    direction = f"{destination} đến {origin} (Tuyến ngược lại)" if is_reverse else f"{origin} đến {destination}"
+    lines = [f"Các chuyến bay từ {direction}:"]
+    
     for f in flights:
         price_str = f"{f['price']:,}".replace(",", ".") + "đ"
         lines.append(f"- {f['airline']}: {f['departure']} - {f['arrival']} | Giá: {price_str} | Hạng: {f['class']}")
         
+    cheapest_flight = min(flights, key=lambda x: x["price"])
+    cheap_price_str = f"{cheapest_flight['price']:,}".replace(",", ".") + "đ"
+    lines.append(f"\n💡 Chuyến bay rẻ nhất: {cheapest_flight['airline']} ({cheapest_flight['departure']} - {cheapest_flight['arrival']}) với giá {cheap_price_str}")
+    
     return "\n".join(lines)
 
 
